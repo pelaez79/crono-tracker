@@ -17,6 +17,7 @@
     propios: leer(CLAVES.propios, []),
     platos: [],
     momento: momentoPorHora(),
+    unidades: 'usa',     // 'usa' (lb, pies/pulg) o 'metrico' (kg, cm); el cálculo interno va siempre en kg/cm
     hoja: null,          // { alimento, porciones }
     metasPendientes: null
   };
@@ -66,15 +67,44 @@
     b.addEventListener('click', function () { ir(b.getAttribute('data-ir')); });
   });
 
+  /* ---------------- Unidades (USA ⇄ métrico) ---------------- */
+  var LB_POR_KG = 2.20462, CM_POR_PULGADA = 2.54;
+  function aplicarUnidades(u) {
+    estado.unidades = u;
+    document.querySelectorAll('#seg-unidades button').forEach(function (b) {
+      b.classList.toggle('activo', b.getAttribute('data-unidades') === u);
+    });
+    var usa = u === 'usa';
+    $('lbl-peso').textContent = usa ? 'Tu peso (lb)' : 'Tu peso (kg)';
+    var inp = $('f-peso');
+    inp.min = usa ? '77' : '35'; inp.max = usa ? '660' : '300';
+    inp.placeholder = usa ? 'Ej. 176' : 'Ej. 80';
+    $('campo-est-usa').style.display = usa ? '' : 'none';
+    $('campo-est-cm').style.display = usa ? 'none' : '';
+  }
+  document.querySelectorAll('#seg-unidades button').forEach(function (b) {
+    b.addEventListener('click', function () { aplicarUnidades(b.getAttribute('data-unidades')); });
+  });
+
   /* ---------------- Onboarding ---------------- */
   function mostrarOnboarding(prefill) {
     var ob = $('onboarding');
     ob.classList.add('abierto');
     if (prefill && estado.perfil) {
       var p = estado.perfil;
-      $('f-peso').value = p.pesoKg; $('f-estatura').value = p.estaturaCm;
+      aplicarUnidades(p.unidades || 'metrico');
+      if (estado.unidades === 'usa') {
+        $('f-peso').value = Math.round(p.pesoKg * LB_POR_KG * 10) / 10;
+        var pulg = p.estaturaCm / CM_POR_PULGADA, pies = Math.floor(pulg / 12), resto = Math.round((pulg - pies * 12) * 10) / 10;
+        if (resto >= 12) { pies += 1; resto = 0; }
+        $('f-pies').value = pies; $('f-pulgadas').value = resto;
+      } else {
+        $('f-peso').value = p.pesoKg; $('f-estatura').value = p.estaturaCm;
+      }
       $('f-edad').value = p.edad; $('f-sexo').value = p.sexo;
       $('f-actividad').value = p.actividad; $('f-objetivo').value = p.objetivo;
+    } else {
+      aplicarUnidades(estado.unidades || 'usa');
     }
     window.scrollTo(0, 0);
   }
@@ -82,13 +112,22 @@
 
   $('form-perfil').addEventListener('submit', function (e) {
     e.preventDefault();
+    var pesoKg, estaturaCm;
+    if (estado.unidades === 'usa') {
+      pesoKg = parseFloat($('f-peso').value) / LB_POR_KG;
+      estaturaCm = ((parseFloat($('f-pies').value) || 0) * 12 + (parseFloat($('f-pulgadas').value) || 0)) * CM_POR_PULGADA;
+    } else {
+      pesoKg = parseFloat($('f-peso').value);
+      estaturaCm = parseFloat($('f-estatura').value);
+    }
     var p = {
-      pesoKg: parseFloat($('f-peso').value),
-      estaturaCm: parseFloat($('f-estatura').value),
+      pesoKg: Math.round(pesoKg * 10) / 10,
+      estaturaCm: Math.round(estaturaCm),
       edad: parseInt($('f-edad').value, 10),
       sexo: $('f-sexo').value,
       actividad: $('f-actividad').value,
-      objetivo: $('f-objetivo').value
+      objetivo: $('f-objetivo').value,
+      unidades: estado.unidades
     };
     if (!(p.pesoKg > 0 && p.estaturaCm > 0 && p.edad > 0)) return;
     var metas = M.calcularMetas(p);
@@ -222,7 +261,7 @@
       '<div class="fila-meta"><span>Proteína (2.0 g/kg)</span><b>' + m.proteinaG + ' g</b></div>' +
       '<div class="fila-meta"><span>Carbos (tope 2.0 g/kg)</span><b>' + m.carbosG + ' g</b></div>' +
       '<div class="fila-meta"><span>Grasa</span><b>' + m.grasaG + ' g</b></div>' +
-      '<div class="fila-meta"><span>Tu peso base</span><b>' + p.pesoKg + ' kg</b></div>' +
+      '<div class="fila-meta"><span>Tu peso base</span><b>' + (p.unidades === 'usa' ? (Math.round(p.pesoKg * LB_POR_KG * 10) / 10) + ' lb' : p.pesoKg + ' kg') + '</b></div>' +
       '<p class="mini" style="margin-top:10px">Estimaciones con Mifflin-St Jeor (mantenimiento ~' + m.mantenimientoEstimado + ' kcal). Si tu peso cambia de forma sostenida, edita tu perfil para recalcular.</p>';
   }
 
@@ -255,7 +294,11 @@
     var todos = todosLosAlimentos();
     var lista;
     if (!q) {
-      lista = todos.filter(function (a) { return a.momento === estado.momento || a.momento === 'cualquiera'; }).slice(0, 12);
+      lista = todos.filter(function (a) { return a.momento === estado.momento || a.momento === 'cualquiera'; })
+        .sort(function (x, y) {
+          var ex = x.momento === estado.momento ? 0 : 1, ey = y.momento === estado.momento ? 0 : 1;
+          return (ex - ey) || (y.proteina - x.proteina);
+        }).slice(0, 20);
     } else {
       lista = todos.filter(function (a) { return normalizar(a.nombre).indexOf(q) !== -1; }).slice(0, 30);
     }
