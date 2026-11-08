@@ -23,17 +23,31 @@
       </div>
     </div>
     <h1>No cuentes solo calorías.<br><em>Ordena tu día.</em></h1>
-    <p class="sub">El método: proteína a <b>2.0 g/kg</b>, desayuno sin carbos y la carga de carbos en tu última comida. Cuéntanos lo básico y calculamos tus metas. Todo queda guardado solo en tu teléfono.</p>
+    <p class="sub">El método: proteína a <b>2.0 g/kg</b> (≈0.9 g por libra), desayuno sin carbos y la carga de carbos en tu última comida. Cuéntanos lo básico y calculamos tus metas. Todo queda guardado solo en tu teléfono.</p>
 
     <form id="form-perfil">
+      <div class="campo">
+        <label>Unidades</label>
+        <div class="segmentos" id="seg-unidades" style="margin-top:6px">
+          <button type="button" data-unidades="usa" class="activo">USA · libras y pies</button>
+          <button type="button" data-unidades="metrico">Métrico · kg y cm</button>
+        </div>
+      </div>
       <div class="dos-col">
         <div class="campo">
-          <label for="f-peso">Tu peso (kg)</label>
-          <input id="f-peso" type="number" inputmode="decimal" min="35" max="300" step="0.1" required placeholder="Ej. 80">
+          <label for="f-peso" id="lbl-peso">Tu peso (lb)</label>
+          <input id="f-peso" type="number" inputmode="decimal" min="77" max="660" step="0.1" required placeholder="Ej. 176">
         </div>
-        <div class="campo">
+        <div class="campo" id="campo-est-usa">
+          <label>Estatura (pies / pulgadas)</label>
+          <div class="dos-col">
+            <input id="f-pies" type="number" inputmode="numeric" min="3" max="7" placeholder="5" aria-label="Pies">
+            <input id="f-pulgadas" type="number" inputmode="decimal" min="0" max="11.9" step="0.1" placeholder="8" aria-label="Pulgadas">
+          </div>
+        </div>
+        <div class="campo" id="campo-est-cm" style="display:none">
           <label for="f-estatura">Estatura (cm)</label>
-          <input id="f-estatura" type="number" inputmode="numeric" min="120" max="230" required placeholder="Ej. 172">
+          <input id="f-estatura" type="number" inputmode="numeric" min="120" max="230" placeholder="Ej. 172">
         </div>
       </div>
       <div class="dos-col">
@@ -176,9 +190,9 @@
       <h2 class="vista">El método</h2>
       <p class="sub">No es otro contador de calorías. Es un orden para tu día, pensado para la comida que de verdad comes.</p>
 
-      <div class="metodo-num"><div class="n">1</div><p><b>Proteína manda: 2.0 g/kg</b>Tu meta diaria es 2.0 gramos por kilo de tu peso, y ninguna comida principal baja de 30 g. La proteína sostiene tu músculo mientras el déficit hace su trabajo.</p></div>
+      <div class="metodo-num"><div class="n">1</div><p><b>Proteína manda: 2.0 g/kg</b>Tu meta diaria es 2.0 gramos por kilo de tu peso (≈0.9 g por libra), y ninguna comida principal baja de 30 g. La proteína sostiene tu músculo mientras el déficit hace su trabajo.</p></div>
       <div class="metodo-num"><div class="n">2</div><p><b>Desayuno sin carbos</b>Empiezas el día con proteína y grasa: huevos, queso, jamón, yogur griego. Los carbos no entran todavía.</p></div>
-      <div class="metodo-num"><div class="n">3</div><p><b>Los carbos suben hacia la cena</b>Con tope de 2.0 g/kg al día: poco o nada en la mañana, una parte al mediodía (~40%) y la carga principal en tu última comida (~60%).</p></div>
+      <div class="metodo-num"><div class="n">3</div><p><b>Los carbos suben hacia la cena</b>Con tope de 2.0 g/kg al día (≈0.9 g por libra): poco o nada en la mañana, una parte al mediodía (~40%) y la carga principal en tu última comida (~60%).</p></div>
       <div class="metodo-num"><div class="n">4</div><p><b>Déficit suave, sin castigo</b>Si tu objetivo es bajar: 250–350 kcal bajo tu mantenimiento estimado. Nada de dietas de hambre que se abandonan a la semana.</p></div>
 
       <div class="card">
