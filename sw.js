@@ -7,7 +7,7 @@
    - Las navegaciones sin conexión caen al index cacheado (fallback
      offline: obligatorio para que no cuenten como crashes en TWA).
    Sube CACHE al cambiar el shell para forzar actualización. */
-const CACHE = 'crono-shell-v2';
+const CACHE = 'crono-shell-v3';
 const SHELL = [
   './',
   'index.html',
