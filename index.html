@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Crono — Tu día, en orden</title>
+<meta name="description" content="Tracker de crono-nutrición en español: proteína a 2.0 g/kg, carbos que suben hacia la cena y la comida caribeña y mexicana que sí comes. Valores estimados.">
+<meta name="theme-color" content="#0c100d">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- ============ ONBOARDING ============ -->
+<section id="onboarding" aria-label="Configura tu método">
+  <div class="dentro">
+    <div class="brand">
+      <svg width="38" height="38" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="19" fill="none" stroke="#e39a2d" stroke-width="4"/><path d="M24 13v11l8 5" fill="none" stroke="#e39a2d" stroke-width="4" stroke-linecap="round"/></svg>
+      <div>
+        <div class="name" style="font-size:22px;font-weight:800">Crono<em style="color:#e39a2d;font-style:normal">.</em></div>
+      </div>
+    </div>
+    <h1>No cuentes solo calorías.<br><em>Ordena tu día.</em></h1>
+    <p class="sub">El método: proteína a <b>2.0 g/kg</b>, desayuno sin carbos y la carga de carbos en tu última comida. Cuéntanos lo básico y calculamos tus metas. Todo queda guardado solo en tu teléfono.</p>
+
+    <form id="form-perfil">
+      <div class="dos-col">
+        <div class="campo">
+          <label for="f-peso">Tu peso (kg)</label>
+          <input id="f-peso" type="number" inputmode="decimal" min="35" max="300" step="0.1" required placeholder="Ej. 80">
+        </div>
+        <div class="campo">
+          <label for="f-estatura">Estatura (cm)</label>
+          <input id="f-estatura" type="number" inputmode="numeric" min="120" max="230" required placeholder="Ej. 172">
+        </div>
+      </div>
+      <div class="dos-col">
+        <div class="campo">
+          <label for="f-edad">Edad</label>
+          <input id="f-edad" type="number" inputmode="numeric" min="16" max="100" required placeholder="Ej. 38">
+        </div>
+        <div class="campo">
+          <label for="f-sexo">Sexo</label>
+          <select id="f-sexo">
+            <option value="hombre">Hombre</option>
+            <option value="mujer">Mujer</option>
+          </select>
+        </div>
+      </div>
+      <div class="campo">
+        <label for="f-actividad">Tu actividad diaria</label>
+        <select id="f-actividad">
+          <option value="sedentario">Sedentaria (oficina, poco movimiento)</option>
+          <option value="ligero" selected>Ligera (camino, trabajo activo suave)</option>
+          <option value="moderado">Moderada (entreno 3–5 días/semana)</option>
+          <option value="alto">Alta (trabajo físico o entreno diario)</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label for="f-objetivo">Tu objetivo</label>
+        <select id="f-objetivo">
+          <option value="perder" selected>Bajar de peso, sin pasar hambre</option>
+          <option value="mantener">Mantener mi peso</option>
+          <option value="ganar">Ganar masa y fuerza</option>
+        </select>
+      </div>
+      <div id="metas-preview"></div>
+      <p style="margin-top:18px"><button class="btn" type="submit">Calcular mis metas</button></p>
+      <p class="disclaimer">Las metas son <b>estimaciones</b> calculadas con la fórmula estándar Mifflin-St Jeor y el método de arriba. Esta app no es un dispositivo médico y no sustituye el consejo de un profesional de la salud. Consulta a tu médico antes de cambiar tu alimentación, en especial si tienes alguna condición de salud.</p>
+    </form>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<div id="app" hidden>
+  <header class="top">
+    <div class="brand">
+      <svg width="32" height="32" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="19" fill="none" stroke="#e39a2d" stroke-width="4"/><path d="M24 13v11l8 5" fill="none" stroke="#e39a2d" stroke-width="4" stroke-linecap="round"/></svg>
+      <div>
+        <div class="name">Crono<em>.</em></div>
+        <div class="tag" id="fecha-hoy">Hoy</div>
+      </div>
+    </div>
+    <div class="racha" title="Días seguidos registrando">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c1 4-4 6-4 11a4.5 4.5 0 0 0 9 0c0-2-1-3.5-2-5-.3 1-1 2-2 2.5C13.5 9 13 5 12 2zM12 22a7 7 0 0 1-7-7c0-5 5-7 6-12 3 3 8 6.5 8 12a7 7 0 0 1-7 7z" opacity=".9"/></svg>
+      <b id="racha-num">0</b><span>días</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===== HOY ===== -->
+    <section class="view activa" id="vista-hoy">
+      <div class="card">
+        <h3>Proteína del día</h3>
+        <div class="anillo-wrap">
+          <div class="anillo">
+            <svg width="118" height="118" viewBox="0 0 118 118">
+              <circle cx="59" cy="59" r="50" fill="none" stroke="#1e2820" stroke-width="11"/>
+              <circle id="anillo-prog" cx="59" cy="59" r="50" fill="none" stroke="#7fb069" stroke-width="11" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314"/>
+            </svg>
+            <div class="centro"><b id="anillo-pct">0%</b><small>de tu meta</small></div>
+          </div>
+          <div class="anillo-datos">
+            <p class="grande"><b id="prot-gramos">0 g</b> de <span id="prot-meta">0 g</span></p>
+            <p class="mini">Método: 2.0 g por kg de tu peso, con piso de 30 g en cada comida.</p>
+            <p class="mini" id="prot-resta"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Energía y macros</h3>
+        <div class="fila-meta" style="margin-top:0"><span><b id="kcal-num">0</b> kcal</span><span class="obj">meta <span id="kcal-meta">0</span></span></div>
+        <div class="barra"><i id="barra-kcal" style="width:0%"></i></div>
+        <div class="fila-meta"><span>Carbohidratos <b id="carb-num">0 g</b></span><span class="obj">tope <span id="carb-meta">0 g</span></span></div>
+        <div class="barra"><i id="barra-carb" style="width:0%"></i></div>
+        <div class="fila-meta"><span>Grasa <b id="grasa-num">0 g</b></span><span class="obj">meta <span id="grasa-meta">0 g</span></span></div>
+        <div class="barra grasa"><i id="barra-grasa" style="width:0%"></i></div>
+      </div>
+
+      <div class="card">
+        <h3>La línea de crono — tus carbos por momento</h3>
+        <div id="linea-crono"></div>
+        <div class="aviso-metodo"><b>El método:</b> los carbos suben durante el día. Desayuno sin carbos; la carga principal va en tu <b>última comida</b>, cuando tu cuerpo la aprovecha para recuperarse de noche.</div>
+      </div>
+
+      <div class="card">
+        <h3>Lo que has registrado hoy</h3>
+        <div id="registros-hoy"></div>
+        <p style="margin-top:14px"><button class="btn" data-ir="anadir">Añadir una comida</button></p>
+      </div>
+      <p class="disclaimer">Valores nutricionales <b>estimados</b> por porción típica. Esta app organiza tus comidas; no es un dispositivo médico ni diagnostica ni trata ninguna condición. Consulta a tu médico.</p>
+    </section>
+
+    <!-- ===== AÑADIR ===== -->
+    <section class="view" id="vista-anadir">
+      <h2 class="vista">Añadir comida</h2>
+      <p class="sub">Elige el momento, busca tu plato — el Caribe y México que sí comes — y ajusta la porción.</p>
+      <div class="segmentos" id="seg-momento" role="tablist" aria-label="Momento del día">
+        <button data-momento="desayuno">Desayuno</button>
+        <button data-momento="almuerzo">Almuerzo</button>
+        <button data-momento="cena">Cena</button>
+        <button data-momento="snack">Snack</button>
+      </div>
+
+      <h2 class="vista" style="font-size:14.5px;margin-top:18px">Registro rápido — básicos</h2>
+      <div class="chips" id="chips-basicos"></div>
+
+      <div class="buscador">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8"/></svg>
+        <input id="buscar" type="search" placeholder="Busca: mofongo, pozole, tacos…" autocomplete="off">
+      </div>
+      <div id="resultados"></div>
+
+      <details class="manual">
+        <summary>¿No está tu comida? Añádela a mano</summary>
+        <form id="form-manual">
+          <div class="campo"><label for="m-nombre">Nombre</label><input id="m-nombre" required placeholder="Ej. Arroz de la abuela"></div>
+          <div class="campo"><label for="m-porcion">Porción</label><input id="m-porcion" placeholder="Ej. 1 taza (200 g)"></div>
+          <div class="tres-col">
+            <div class="campo"><label for="m-kcal">kcal</label><input id="m-kcal" type="number" min="0" required></div>
+            <div class="campo"><label for="m-p">Proteína g</label><input id="m-p" type="number" min="0" step="0.1" required></div>
+            <div class="campo"><label for="m-c">Carbos g</label><input id="m-c" type="number" min="0" step="0.1" required></div>
+          </div>
+          <div class="campo" style="max-width:31%"><label for="m-g">Grasa g</label><input id="m-g" type="number" min="0" step="0.1" required></div>
+          <p style="margin-top:14px"><button class="btn secundario" type="submit">Guardar y registrar</button></p>
+          <p class="disclaimer">Queda guardada solo en tu teléfono, marcada como «Mía», y la puedes reusar cuando quieras.</p>
+        </form>
+      </details>
+    </section>
+
+    <!-- ===== MÉTODO ===== -->
+    <section class="view" id="vista-metodo">
+      <h2 class="vista">El método</h2>
+      <p class="sub">No es otro contador de calorías. Es un orden para tu día, pensado para la comida que de verdad comes.</p>
+
+      <div class="metodo-num"><div class="n">1</div><p><b>Proteína manda: 2.0 g/kg</b>Tu meta diaria es 2.0 gramos por kilo de tu peso, y ninguna comida principal baja de 30 g. La proteína sostiene tu músculo mientras el déficit hace su trabajo.</p></div>
+      <div class="metodo-num"><div class="n">2</div><p><b>Desayuno sin carbos</b>Empiezas el día con proteína y grasa: huevos, queso, jamón, yogur griego. Los carbos no entran todavía.</p></div>
+      <div class="metodo-num"><div class="n">3</div><p><b>Los carbos suben hacia la cena</b>Con tope de 2.0 g/kg al día: poco o nada en la mañana, una parte al mediodía (~40%) y la carga principal en tu última comida (~60%).</p></div>
+      <div class="metodo-num"><div class="n">4</div><p><b>Déficit suave, sin castigo</b>Si tu objetivo es bajar: 250–350 kcal bajo tu mantenimiento estimado. Nada de dietas de hambre que se abandonan a la semana.</p></div>
+
+      <div class="card">
+        <h3>Tus metas de hoy</h3>
+        <div id="metas-resumen"></div>
+        <p style="margin-top:14px"><button class="btn secundario" id="btn-editar-perfil">Editar mi perfil</button></p>
+      </div>
+
+      <div class="card">
+        <h3>Tus datos</h3>
+        <p class="sub">Todo vive en este teléfono: sin cuentas, sin servidores, sin contraseñas. Si borras los datos, se acabó: no hay copia en ningún lugar.</p>
+        <p style="margin-top:12px"><button class="btn peligro" id="btn-borrar">Borrar todos mis datos</button></p>
+      </div>
+      <p class="disclaimer">Esta app es una herramienta de organización de comidas con valores estimados. <b>No es un dispositivo médico</b>, no diagnostica, trata, cura ni previene ninguna condición. La información no sustituye el consejo de un médico o dietista licenciado. Consulta a tu médico antes de hacer cambios importantes en tu alimentación. <a href="privacidad.html">Privacidad y avisos</a>.</p>
+    </section>
+
+    <!-- ===== PRO ===== -->
+    <section class="view" id="vista-pro">
+      <h2 class="vista">Crono Pro</h2>
+      <span class="pro-badge">Próximamente</span>
+      <p class="precio">$39.99<small> /año</small></p>
+      <p class="sub">El registro manual es gratis para siempre. Pro añade la velocidad:</p>
+      <ul class="pro-lista">
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 12.5l5 5L20 6.5"/></svg><span><b>Foto y listo</b> — registra tu plato con una foto, con confirmación antes de guardar. (En construcción.)</span></li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 12.5l5 5L20 6.5"/></svg><span><b>Línea de crono avanzada</b> — ventanas de comida, rachas y reportes por semana.</span></li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 12.5l5 5L20 6.5"/></svg><span><b>La base completa</b> — de 140 a 300–500 platos caribeños y mexicanos verificados.</span></li>
+      </ul>
+      <div class="card">
+        <h3>Únete a la lista de apertura</h3>
+        <p class="sub">Todavía no cobramos nada. Déjanos tu correo y serás de los primeros en entrar cuando Pro abra, con precio de fundador.</p>
+        <form id="form-lista">
+          <div class="campo"><label for="pro-email">Tu correo</label><input id="pro-email" type="email" required placeholder="tucorreo@ejemplo.com"></div>
+          <p style="margin-top:14px"><button class="btn" type="submit">Quiero entrar</button></p>
+        </form>
+        <div class="msg-ok" id="lista-ok">Listo: quedaste en la lista de apertura de Crono Pro. Te escribimos cuando abra — sin spam, solo el aviso.</div>
+      </div>
+      <p class="disclaimer">Al enviar tu correo aceptas recibir el aviso de apertura. No compartimos tu correo con terceros. Puedes pedir baja en cualquier momento respondiendo al aviso.</p>
+    </section>
+  </main>
+
+  <nav class="bottom" aria-label="Navegación principal">
+    <button data-ir="hoy" class="activo"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2.5" stroke-linecap="round"/></svg>Hoy</button>
+    <button data-ir="anadir"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Añadir</button>
+    <button data-ir="metodo"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h13a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5z"/><path d="M5 4v16" /><path d="M9 9h6M9 13h6" stroke-linecap="round"/></svg>Método</button>
+    <button data-ir="pro"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l4 4 5-6 5 6 4-4-1.5 10h-15z" stroke-linejoin="round"/></svg>Pro</button>
+  </nav>
+</div>
+
+<!-- ============ HOJA DE DETALLE ============ -->
+<div class="hoja-fondo" id="hoja-fondo">
+  <div class="hoja" role="dialog" aria-modal="true" aria-labelledby="hoja-nombre">
+    <h3 id="hoja-nombre">Alimento</h3>
+    <p class="porcion" id="hoja-porcion"></p>
+    <div class="stepper">
+      <button id="step-menos" aria-label="Menos porción">−</button>
+      <b><span id="step-valor">1</span><small>porciones</small></b>
+      <button id="step-mas" aria-label="Más porción">+</button>
+    </div>
+    <div class="macros-hoja">
+      <div><b id="hoja-kcal">0</b><small>kcal</small></div>
+      <div><b id="hoja-p">0 g</b><small>proteína</small></div>
+      <div><b id="hoja-c">0 g</b><small>carbos</small></div>
+      <div><b id="hoja-g">0 g</b><small>grasa</small></div>
+    </div>
+    <p><button class="btn" id="hoja-anadir">Añadir a <span id="hoja-momento">la cena</span></button></p>
+    <p style="margin-top:10px"><button class="btn fantasma" id="hoja-cerrar">Cancelar</button></p>
+  </div>
+</div>
+
+<script src="js/metodo.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
